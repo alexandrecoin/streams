@@ -15,17 +15,29 @@ const { Readable } = require('node:stream');
 class CertifReadable extends Readable {
     data = '';
     _read() {
-        this.push('fourchette');
-        this.push('cuillère');
-        this.push('couteau');
+        // let i = 0
+        // while (i < 10000) {
+            this.push('fourchette');
+            this.push('cuillère');
+            this.push('couteau');
+            this.push('fourchette');
+            this.push('cuillère');
+            this.push('couteau');
+            // i++;
+        // }
+
         this.push(null);
     }
 }
 
 let firstCertifReadable = new CertifReadable();
 
-firstCertifReadable.on('data', (data) => {
-    console.log('read:', data.toString());
+const goReadCertif = () => new Promise((resolve, reject) => {
+    firstCertifReadable.on('data', (data) => {
+        console.log('read:', data.toString());
+    }).on('end', () => {
+        resolve('OK')
+    })
 })
 
-console.log('c\'est fini');
+goReadCertif().then(test => console.log('test', test))
