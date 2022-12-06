@@ -1,5 +1,6 @@
 const { createReadStream } = require('node:fs');
-const { Readable } = require('node:stream');
+const { stderr } = require('node:process');
+const { Readable, Transform } = require('node:stream');
 
 /*createReadStream('./scribe.txt', { encoding: 'utf8' })
    .on('data', (data) => {
@@ -13,31 +14,44 @@ const { Readable } = require('node:stream');
   });*/
 
 class CertifReadable extends Readable {
-    data = '';
-    _read() {
-        // let i = 0
-        // while (i < 10000) {
-            this.push('fourchette');
-            this.push('cuillère');
-            this.push('couteau');
-            this.push('fourchette');
-            this.push('cuillère');
-            this.push('couteau');
-            // i++;
-        // }
+  data = '';
+  _read() {
+    // let i = 0
+    // while (i < 10000) {
+    this.push('fourchette');
+    this.push('cuillère');
+    this.push('couteau');
+    this.push('fourchette');
+    this.push('cuillère');
+    this.push('couteau');
+    // i++;
+    // }
 
-        this.push(null);
-    }
+    this.push(null);
+  }
 }
+
+const toUpperCase = new Transform({
+  transform(chunk, _, cb) {
+    let array = chunk.toString().split(' ');
+    array.forEach((word) => {
+      this.push(word.toUpperCase() + '\n');
+    });
+    cb()
+    ;
+  },
+});
 
 let firstCertifReadable = new CertifReadable();
 
-const goReadCertif = () => new Promise((resolve, reject) => {
-    firstCertifReadable.on('data', (data) => {
-        console.log('read:', data.toString());
-    }).on('end', () => {
-        resolve('OK')
-    })
-})
+const goReadCertif = () =>
+  new Promise((resolve, reject) => {
+    createReadStream('./scribe.txt', { encoding: 'utf8' })
+      .on('end', () => {
+        resolve('OK');
+      })
+      .pipe(toUpperCase)
+      .pipe(process.stderr);
+  });
 
-goReadCertif().then(test => console.log('test', test))
+goReadCertif().then((test) => console.log('test', test));
